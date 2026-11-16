@@ -1,8 +1,12 @@
+// Penanggung jawab: Haidar | Domain Developer
 package com.kopikita.model
 
 /**
- * Subclass Makanan yang mewarisi MenuItem (Inheritance).
- * Memiliki properti spesifik tingkat kepedasan dan status vegetarian.
+ * Model menu makanan.
+ * Selain atribut umum dari MenuItem, makanan memiliki tingkat pedas
+ * dan penanda apakah menu tersebut cocok untuk vegetarian.
+ *
+ * Penanggung jawab bagian Domain Model: Haidar
  */
 class Makanan(
     id: String,
@@ -15,9 +19,15 @@ class Makanan(
 
     override val kategori: String = "Makanan"
 
+    init {
+        require(tingkatPedas in 0..5) {
+            "Tingkat pedas makanan harus berada pada rentang 0 sampai 5."
+        }
+    }
+
     override fun getDetail(): String {
-        val statusVeg = if (isVegetarian) "🌱 Vegetarian" else "🍖 Non-Veg"
-        val pedasStr = if (tingkatPedas > 0) "🌶️ Level $tingkatPedas" else "Tidak Pedas"
-        return "$statusVeg | $pedasStr"
+        val informasiVegetarian = if (isVegetarian) "Vegetarian" else "Non-Vegetarian"
+        val informasiPedas = if (tingkatPedas == 0) "Tidak pedas" else "Level pedas $tingkatPedas"
+        return "$informasiVegetarian | $informasiPedas"
     }
 }

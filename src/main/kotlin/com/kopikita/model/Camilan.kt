@@ -1,8 +1,11 @@
+// Penanggung jawab: Haidar | Domain Developer
 package com.kopikita.model
 
 /**
- * Subclass Camilan yang mewarisi MenuItem.
- * Mewakili snack/pastry/kudapan dengan properti rasa dan porsi sajian.
+ * Model untuk menu camilan seperti pastry, kudapan, dan makanan ringan.
+ * Atribut porsi dan jenis rasa membedakan camilan dari kategori menu lain.
+ *
+ * Penanggung jawab bagian Domain Model: Haidar
  */
 class Camilan(
     id: String,
@@ -15,8 +18,12 @@ class Camilan(
 
     override val kategori: String = "Camilan"
 
+    init {
+        require(porsi.isNotBlank()) { "Informasi porsi camilan tidak boleh kosong." }
+    }
+
     override fun getDetail(): String {
-        val rasa = if (isManis) "🧁 Manis" else "🍟 Gurih"
-        return "$rasa | $porsi"
+        val jenisRasa = if (isManis) "Manis" else "Gurih"
+        return "$jenisRasa | ${porsi.trim()}"
     }
 }

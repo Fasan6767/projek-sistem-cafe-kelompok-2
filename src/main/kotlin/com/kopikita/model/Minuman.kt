@@ -1,16 +1,23 @@
+// Penanggung jawab: Haidar | Domain Developer
 package com.kopikita.model
 
-/**
- * Pilihan ukuran minuman kafe
- */
+/** Pilihan ukuran minuman beserta tambahan harga untuk setiap ukuran. */
 enum class UkuranMinuman(val label: String, val tambahanHarga: Double) {
     REGULER("Reguler", 0.0),
-    LARGE("Large", 4000.0)
+    LARGE("Large", 4000.0);
+
+    init {
+        require(tambahanHarga.isFinite() && tambahanHarga >= 0.0) {
+            "Tambahan harga ukuran minuman tidak boleh negatif."
+        }
+    }
 }
 
 /**
- * Subclass Minuman yang mewarisi MenuItem.
- * Mendukung kustomisasi ukuran dan opsi dingin/panas.
+ * Model menu minuman dengan pilihan ukuran dan penyajian dingin atau panas.
+ * Harga yang disimpan pada MenuItem adalah harga dasar ditambah biaya ukuran.
+ *
+ * Penanggung jawab bagian Domain Model: Haidar
  */
 class Minuman(
     id: String,
@@ -23,8 +30,14 @@ class Minuman(
 
     override val kategori: String = "Minuman"
 
+    init {
+        require(hargaDasar.isFinite() && hargaDasar >= 0.0) {
+            "Harga dasar minuman harus berupa angka valid dan tidak negatif."
+        }
+    }
+
     override fun getDetail(): String {
-        val suhu = if (isDingin) "🧊 Dingin (Iced)" else "☕ Panas (Hot)"
-        return "${ukuran.label} | $suhu"
+        val suhuPenyajian = if (isDingin) "Dingin" else "Panas"
+        return "${ukuran.label} | $suhuPenyajian"
     }
 }
