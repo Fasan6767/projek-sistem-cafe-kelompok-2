@@ -6,7 +6,7 @@ import com.kopikita.exception.MenuTidakDitemukanException
 import com.kopikita.exception.PembayaranGagalException
 import com.kopikita.exception.StokTidakCukupException
 import com.kopikita.model.*
-import com.kopikita.service.KafeService
+import com.kopikita.service.*
 import java.util.Scanner
 
 class KafeUI(
