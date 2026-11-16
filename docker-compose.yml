@@ -1,0 +1,12 @@
+services:
+  kopikita-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kopikita-pos:latest
+    container_name: kopikita_pos_app
+    stdin_open: true # Untuk interaksi terminal CLI (-i)
+    tty: true        # Alokasi pseudo-TTY (-t)
+    volumes:
+      - ./data:/app/data
+    restart: "no"
