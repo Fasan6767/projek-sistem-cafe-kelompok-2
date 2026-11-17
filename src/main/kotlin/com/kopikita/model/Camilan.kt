@@ -1,3 +1,4 @@
+
 // Penanggung jawab: Syaroful Haidar Sudaryono | Domain Developer
 package com.kopikita.model
 
@@ -14,7 +15,9 @@ class Camilan(
     override val kategori: String = "Camilan"
 
     init {
-        require(porsi.isNotBlank()) { "Informasi porsi camilan tidak boleh kosong." }
+        require(porsi.isNotBlank()) {
+            "Informasi porsi camilan tidak boleh kosong."
+        }
     }
 
     override fun getDetail(): String {

@@ -12,6 +12,10 @@ abstract class MenuItem(
     val harga: Double,
     stokAwal: Int
 ) {
+    /** Alias kompatibilitas: service dan UI menggunakan istilah kode. */
+    val kode: String
+        get() = id
+
     /** Stok dapat dibaca dari luar, tetapi hanya dapat diubah melalui method kelas. */
     var stok: Int = stokAwal
         protected set
@@ -31,7 +35,13 @@ abstract class MenuItem(
     /** Mengembalikan informasi khusus dari jenis menu. */
     abstract fun getDetail(): String
 
-    /** Mengurangi stok ketika item dimasukkan ke pesanan. */
+    /** Alias kompatibilitas untuk service dan UI yang memakai nama method lama. */
+    fun infoKategori(): String = kategori
+
+    /** Alias kompatibilitas untuk UI yang menampilkan detail varian. */
+    fun deskripsiDetail(): String = getDetail()
+
+    /** Mengurangi stok setelah transaksi berhasil. */
     open fun kurangiStok(jumlah: Int) {
         require(jumlah > 0) { "Jumlah pengurangan stok harus lebih dari 0." }
         check(jumlah <= stok) {
@@ -40,7 +50,7 @@ abstract class MenuItem(
         stok -= jumlah
     }
 
-    /** Menambah stok ketika ada restock atau pesanan dibatalkan. */
+    /** Menambah stok ketika ada restock. */
     open fun tambahStok(jumlah: Int) {
         require(jumlah > 0) { "Jumlah penambahan stok harus lebih dari 0." }
         check(stok <= Int.MAX_VALUE - jumlah) {
@@ -56,5 +66,5 @@ abstract class MenuItem(
     }
 
     override fun toString(): String =
-        "[$id] $nama - Rp ${"%,.0f".format(harga)} (Stok: $stok) | ${getDetail()}"
+        "[$kode] $nama - Rp ${"%,.0f".format(harga)} (Stok: $stok) | ${getDetail()}"
 }

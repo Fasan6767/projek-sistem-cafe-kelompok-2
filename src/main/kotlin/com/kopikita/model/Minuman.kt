@@ -17,6 +17,23 @@ class Minuman(
     val isDingin: Boolean = true
 ) : MenuItem(id, nama, hitungHargaAkhir(hargaDasar, ukuran), stokAwal) {
 
+    /** Konstruktor kompatibilitas untuk service yang memakai ukuran dan suhu String. */
+    constructor(
+        id: String,
+        nama: String,
+        hargaDasar: Double,
+        stokAwal: Int,
+        ukuran: String,
+        suhu: String
+    ) : this(
+        id,
+        nama,
+        hargaDasar,
+        stokAwal,
+        parseUkuran(ukuran),
+        parseSuhu(suhu)
+    )
+
     override val kategori: String = "Minuman"
 
     override fun getDetail(): String {
@@ -25,6 +42,18 @@ class Minuman(
     }
 
     companion object {
+        private fun parseUkuran(ukuran: String): UkuranMinuman = when (ukuran.trim().lowercase()) {
+            "reguler", "regular" -> UkuranMinuman.REGULER
+            "large" -> UkuranMinuman.LARGE
+            else -> throw IllegalArgumentException("Ukuran minuman '$ukuran' tidak dikenal.")
+        }
+
+        private fun parseSuhu(suhu: String): Boolean = when (suhu.trim().lowercase()) {
+            "dingin", "cold" -> true
+            "panas", "hot" -> false
+            else -> throw IllegalArgumentException("Suhu minuman '$suhu' tidak dikenal.")
+        }
+
         private fun hitungHargaAkhir(hargaDasar: Double, ukuran: UkuranMinuman): Double {
             require(hargaDasar.isFinite() && hargaDasar >= 0.0) {
                 "Harga dasar minuman harus berupa angka valid dan tidak negatif."

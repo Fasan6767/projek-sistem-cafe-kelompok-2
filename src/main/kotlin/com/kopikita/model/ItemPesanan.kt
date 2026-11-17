@@ -6,6 +6,10 @@ data class ItemPesanan(
     val menuItem: MenuItem,
     val kuantitas: Int
 ) {
+    /** Alias kompatibilitas: service dan UI memakai nama menu. */
+    val menu: MenuItem
+        get() = menuItem
+
     /** Subtotal merupakan harga satuan dikalikan kuantitas. */
     val subtotal: Double = menuItem.harga * kuantitas
 

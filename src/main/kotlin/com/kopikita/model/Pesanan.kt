@@ -1,6 +1,7 @@
 // Penanggung jawab: Syaroful Haidar Sudaryono | Domain Developer
 package com.kopikita.model
 
+import com.kopikita.payment.MetodePembayaran
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -13,8 +14,8 @@ enum class StatusPesanan {
 
 /**
  * Menyimpan item, perhitungan, dan status pesanan pelanggan.
- * Perubahan daftar item dan status dilakukan melalui method agar stok
- * serta aturan transaksi tetap konsisten.
+ * Stok baru dikurangi oleh KafeService setelah pembayaran berhasil,
+ * sehingga stok tidak berubah bila pembayaran gagal atau pesanan dibatalkan.
  */
 class Pesanan(
     val idPesanan: String,
@@ -23,11 +24,9 @@ class Pesanan(
 ) {
     private val daftarItemInternal = mutableListOf<ItemPesanan>()
 
-    /** Snapshot read-only; pemanggil tidak dapat mengubah koleksi internal. */
     val items: List<ItemPesanan>
         get() = daftarItemInternal.toList()
 
-    /** Alias nama properti sesuai diagram kelas. */
     val daftarItem: List<ItemPesanan>
         get() = items
 
@@ -37,30 +36,34 @@ class Pesanan(
     val statusLunas: Boolean
         get() = status == StatusPesanan.LUNAS
 
+    var metodePembayaran: MetodePembayaran? = null
+        private set
+
     init {
         require(idPesanan.isNotBlank()) { "ID pesanan tidak boleh kosong." }
         require(namaPelanggan.isNotBlank()) { "Nama pelanggan tidak boleh kosong." }
     }
 
-    /** Menambahkan menu dan langsung mengurangi stok yang dipesan. */
+    /** Menambahkan item setelah memeriksa stok, tanpa memotong stok inventaris. */
     fun tambahItem(menu: MenuItem, kuantitas: Int) {
         pastikanMasihTerbuka()
         require(kuantitas > 0) { "Kuantitas harus lebih dari 0." }
 
-        val itemLama = daftarItemInternal.firstOrNull { it.menuItem.id == menu.id }
+        val itemLama = daftarItemInternal.firstOrNull { it.menu.id == menu.id }
         val kuantitasBaru = if (itemLama == null) {
             kuantitas
         } else {
-            check(itemLama.menuItem === menu) {
+            check(itemLama.menu === menu) {
                 "ID menu ${menu.id} sudah digunakan oleh objek menu yang berbeda."
             }
             Math.addExact(itemLama.kuantitas, kuantitas)
         }
 
-        // Validasi subtotal dilakukan sebelum stok dikurangi.
-        val itemBaru = ItemPesanan(menu, kuantitasBaru)
-        menu.kurangiStok(kuantitas)
+        check(menu.stokMencukupi(kuantitasBaru)) {
+            "Stok ${menu.nama} tidak mencukupi. Tersedia: ${menu.stok}, diminta: $kuantitasBaru."
+        }
 
+        val itemBaru = ItemPesanan(menu, kuantitasBaru)
         if (itemLama == null) {
             daftarItemInternal.add(itemBaru)
         } else {
@@ -69,8 +72,7 @@ class Pesanan(
         }
     }
 
-    /** Overload untuk menerima objek ItemPesanan secara langsung. */
-    fun tambahItem(item: ItemPesanan) = tambahItem(item.menuItem, item.kuantitas)
+    fun tambahItem(item: ItemPesanan) = tambahItem(item.menu, item.kuantitas)
 
     fun hitungTotal(): Double {
         val total = daftarItemInternal.sumOf { it.subtotal }
@@ -78,7 +80,6 @@ class Pesanan(
         return total
     }
 
-    /** Pajak restoran ditetapkan sebesar 10% dari subtotal. */
     fun hitungPajak(): Double {
         val pajak = hitungTotal() * TARIF_PAJAK
         check(pajak.isFinite()) { "Nilai pajak berada di luar batas perhitungan." }
@@ -91,24 +92,21 @@ class Pesanan(
         return totalAkhir
     }
 
-    /** Pesanan menjadi lunas hanya setelah service menerima pembayaran berhasil. */
     fun tandaiLunas() {
         pastikanMasihTerbuka()
         check(daftarItemInternal.isNotEmpty()) { "Pesanan kosong tidak dapat dilunasi." }
         status = StatusPesanan.LUNAS
     }
 
-    /** Membatalkan pesanan dan mengembalikan stok setiap menu. */
+    /** Dipakai KafeService setelah pembayaran berhasil. */
+    fun selesaikanPembayaran(metode: MetodePembayaran) {
+        tandaiLunas()
+        metodePembayaran = metode
+    }
+
+    /** Membatalkan pesanan; stok tidak perlu dikembalikan karena belum dipotong. */
     fun batalkan() {
         pastikanMasihTerbuka()
-
-        // Validasi seluruh item lebih dahulu supaya tidak ada pengembalian parsial.
-        daftarItemInternal.forEach { item ->
-            check(item.menuItem.stok <= Int.MAX_VALUE - item.kuantitas) {
-                "Stok ${item.menuItem.nama} tidak dapat dikembalikan karena melewati batas maksimum."
-            }
-        }
-        daftarItemInternal.forEach { item -> item.menuItem.tambahStok(item.kuantitas) }
         status = StatusPesanan.DIBATALKAN
     }
 
