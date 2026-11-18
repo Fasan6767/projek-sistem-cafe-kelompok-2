@@ -1,0 +1,31 @@
+CATATAN HASIL PEMERIKSAAN PROYEK KOPIKITA
+
+Pemeriksaan mencakup kode sumber, test, konfigurasi, dan dokumentasi proyek.
+
+1. Perbaikan src/test/kotlin/com/kopikita/OrderWorkflowTest.kt
+   - Menghapus teks "kotlin" sebelum `package com.kopikita`.
+   - Mengganti argumen konstruktor `uangDiterima` menjadi `uangDibayar`.
+   - Mengganti pemanggilan `hitungKembalian(...)` dengan properti `kembalian`, yang dibaca setelah pembayaran diproses.
+   - Mengoreksi komentar harga menu D02 menjadi Rp 24.000 (harga dasar Rp 20.000 ditambah Rp 4.000 untuk ukuran Large).
+
+2. Hasil verifikasi test
+   - Perintah `.\gradlew.bat test --console=plain` berhasil; seluruh test selesai dijalankan.
+   - Kompilasi masih menampilkan peringatan bahwa variabel `menu` di KafeServiceTest.kt baris 111 tidak digunakan.
+
+3. Dokumentasi Docker tidak sesuai berkas proyek
+   - README.md dan CONTRIBUTORS.md menyebut Dockerfile/docker-compose.yml dan perintah `docker compose run --rm kopikita-app`.
+   - Dockerfile dan file Compose tidak ditemukan di proyek, sehingga perintah tersebut belum dapat dijalankan dari folder ini.
+
+4. Laporan omzet belum memfilter tanggal
+   - `KafeService.hitungTotalOmsetHarian()` menjumlahkan semua pesanan lunas di memori tanpa menyaring tanggal, dan CLI menampilkan seluruh riwayat tersebut.
+   - Jika aplikasi berjalan melewati pergantian hari, laporan dapat mencampur transaksi dari hari berbeda. Riwayat juga hilang ketika aplikasi dimulai ulang karena hanya disimpan di memori.
+
+5. Pembayaran QRIS masih simulasi
+   - CLI hanya meminta kasir mengonfirmasi pembayaran dengan jawaban Y/N. Belum ada integrasi atau verifikasi ke penyedia pembayaran, jadi dokumentasi sebaiknya menyebutnya simulasi.
+
+6. Deskripsi cakupan test katalog lebih luas daripada pemeriksaannya
+   - README.md menjelaskan TC-01 memeriksa harga, stok, dan detail varian katalog.
+   - `testTampilkanKatalogMenuLengkap()` di KafeServiceTest.kt hanya memastikan katalog tidak kosong dan memiliki setidaknya satu menu dari setiap kategori; atribut tersebut belum diuji.
+
+7. Catatan ejaan
+   - Gunakan “omzet” (bentuk baku) secara konsisten, bukan “omset”, pada dokumentasi dan teks tampilan.
