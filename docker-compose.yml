@@ -1,0 +1,5 @@
+services:
+  kopikita-app:
+    build: .
+    stdin_open: true
+    tty: true

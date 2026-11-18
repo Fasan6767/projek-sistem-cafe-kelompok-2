@@ -21,9 +21,14 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 application {
     mainClass.set("com.kopikita.MainKt")
+}
+
+// Memungkinkan input interaktif dari keyboard saat dijalankan dengan ./gradlew run
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
